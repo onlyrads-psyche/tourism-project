@@ -26,9 +26,7 @@ jobs:
       - name: Upload Dataset to Hugging Face Hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          cd tourism_project/model_building
-          python data_registration.py
+        run: python tourism_project/model_building/data_registration.py
 
   data-prep:
     needs: register-dataset
@@ -50,9 +48,7 @@ jobs:
       - name: Run Data Preparation
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          cd tourism_project/model_building
-          python data_preparation.py
+        run: python tourism_project/model_building/data_preparation.py
 
   model-training:
     needs: data-prep
@@ -80,9 +76,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MLFLOW_TRACKING_URI: http://localhost:5000
-        run: |
-          cd tourism_project/model_building
-          python model_training.py
+        run: python tourism_project/model_building/model_training.py
 
   deploy-hosting:
     runs-on: ubuntu-latest
@@ -124,8 +118,8 @@ jobs:
       - name: Push files to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          cd tourism_project/deployment
+        run: 
+          python tourism_project/deployment
           
           # Upload app files
           python -c "
