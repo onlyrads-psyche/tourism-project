@@ -30,7 +30,7 @@ except RepositoryNotFoundError:
 
 
 api.upload_folder(
-    folder_path="tourism_project/data",
+    folder_path="tourism_project/data",  # ✅ adjust to your actual path
     repo_id=repo_id,
     repo_type=repo_type,
 )
