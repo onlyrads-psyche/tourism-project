@@ -2,7 +2,7 @@ from huggingface_hub.utils import RepositoryNotFoundError, HfHubHTTPError
 from huggingface_hub import HfApi, create_repo
 import os
 
-# Attaching Huggingface repo id and repo typ
+# Attaching Huggingface repo id and repo type
 repo_id = "dr-psych/tourism_project"
 repo_type = "dataset"
 
@@ -14,7 +14,7 @@ if HF_TOKEN is None:
 from huggingface_hub import HfApi
 api = HfApi()
 # Pass the token explicitly when creating or interacting with repos
-api.create_repo(name=repo_id, token="HF_TOKEN", repo_type="dataset")
+api.create_repo(name=repo_id, token=HF_TOKEN, repo_type="dataset")
 
 # Initialize API client
 api = HfApi(token=os.getenv("HF_TOKEN"))
