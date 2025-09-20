@@ -9,126 +9,131 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 # for hugging face space authentication to upload files
 from huggingface_hub import login, HfApi
+# prep.py
+"""
+Data preprocessing script for Tourism Project
+- Loads dataset from Hugging Face
+- Cleans & preprocesses data
+- Performs feature engineering
+- Saves train/test splits as CSV
+- Uploads processed files to Hugging Face Hub
+"""
 
-# Define constants for the dataset and output paths
-api = HfApi(token=os.getenv("HF_TOKEN"))
+import os
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from huggingface_hub import HfApi
+
+# -------------------------------------------------------------------
+# CONFIG
+# -------------------------------------------------------------------
+HF_TOKEN = os.getenv("HF_TOKEN")
 DATASET_PATH = "hf://datasets/dr-psych/tourism_project/tourism.csv"
-df = pd.read_csv(DATASET_PATH)
-print("Dataset loaded successfully.")
+REPO_ID = "dr-psych/tourism_project"
+REPO_TYPE = "dataset"
 
-print(f"Dataset shape: {df.shape}")
-print(f"Missing values:\n{df.isnull().sum()}")
+# Initialize HF API
+api = HfApi(token=HF_TOKEN)
 
-# Handle missing values
-# Fill missing values for categorical columns with mode
-categorical_cols = ['TypeofContact', 'Occupation', 'Gender', 'MaritalStatus',
-                      'ProductPitched', 'Designation']
+# -------------------------------------------------------------------
+# FUNCTIONS
+# -------------------------------------------------------------------
+def load_data():
+    df = pd.read_csv(DATASET_PATH)
+    print("✅ Dataset loaded successfully.")
+    print(f"Shape: {df.shape}")
+    return df
 
-for col in categorical_cols:
-     if col in df.columns and df[col].isnull().any():
-        df[col].fillna(df[col].mode()[0], inplace=True)
-
-# Fill missing values for numerical columns with median
-numerical_cols = ['Age', 'CityTier', 'NumberOfPersonVisiting', 'PreferredPropertyStar',
+def preprocess_data(df):
+    # Handle missing values
+    categorical_cols = [
+        'TypeofContact', 'Occupation', 'Gender', 'MaritalStatus',
+        'ProductPitched', 'Designation'
+    ]
+    numerical_cols = [
+        'Age', 'CityTier', 'NumberOfPersonVisiting', 'PreferredPropertyStar',
         'NumberOfTrips', 'Passport', 'OwnCar', 'NumberOfChildrenVisiting',
         'MonthlyIncome', 'PitchSatisfactionScore', 'NumberOfFollowups',
-        'DurationOfPitch']
-
-for col in numerical_cols:
-    if col in df.columns and df[col].isnull().any():
-        df[col].fillna(df[col].median(), inplace=True)
-
-# Ensure binary columns are properly encoded (0/1)
-binary_cols = ['Passport', 'OwnCar']
-for col in binary_cols:
-    if col in df.columns:
-       # Convert Yes/No to 1/0 if needed
-       if df[col].dtype == 'object':
-          df[col] = df[col].map({'Yes': 1, 'No': 0}).fillna(0).astype(int)
-
-# Validate data types and ranges
-print("\nData validation:")
-print(f"Age range: {df['Age'].min()} - {df['Age'].max()}")
-print(f"CityTier values: {sorted(df['CityTier'].unique())}")
-print(f"MonthlyIncome range: {df['MonthlyIncome'].min()} - {df['MonthlyIncome'].max()}")
-print(f"Target distribution: {df['ProdTaken'].value_counts()}")
-
-return df
-
-# Ensure all required columns are present (based on data description)
-required_columns = [
-        'CustomerID', 'ProdTaken', 'Age', 'TypeofContact', 'CityTier',
-        'Occupation', 'Gender', 'NumberOfPersonVisiting', 'PreferredPropertyStar',
-        'MaritalStatus', 'NumberOfTrips', 'Passport', 'OwnCar',
-        'NumberOfChildrenVisiting', 'Designation', 'MonthlyIncome',
-        'PitchSatisfactionScore', 'ProductPitched', 'NumberOfFollowups',
         'DurationOfPitch'
     ]
 
-# Check for missing columns
-missing_cols = [col for col in required_columns if col not in df.columns]
-  if missing_cols:
-     print(f"Warning: Missing columns: {missing_cols}")
+    for col in categorical_cols:
+        if col in df.columns and df[col].isnull().any():
+            df[col].fillna(df[col].mode()[0], inplace=True)
 
+    for col in numerical_cols:
+        if col in df.columns and df[col].isnull().any():
+            df[col].fillna(df[col].median(), inplace=True)
 
-# Drop the unique identifier
-df.drop(columns=['CustomerID'], inplace=True)
+    # Binary encoding
+    for col in ['Passport', 'OwnCar']:
+        if col in df.columns and df[col].dtype == 'object':
+            df[col] = df[col].map({'Yes': 1, 'No': 0}).fillna(0).astype(int)
 
+    # Drop unique identifiers
+    if 'CustomerID' in df.columns:
+        df.drop(columns=['CustomerID'], inplace=True)
 
-# Create feature engineering
-df['Income_per_person'] = df['MonthlyIncome'] / (df['NumberOfPersonVisiting'] + 1)
-df['Trips_per_year_ratio'] = df['NumberOfTrips'] / 12
-df['Children_ratio'] = df['NumberOfChildrenVisiting'] / df['NumberOfPersonVisiting']
-df['Followup_per_pitch'] = df['NumberOfFollowups'] / (df['DurationOfPitch'] + 1)
+    # Feature engineering
+    df['Income_per_person'] = df['MonthlyIncome'] / (df['NumberOfPersonVisiting'] + 1)
+    df['Trips_per_year_ratio'] = df['NumberOfTrips'] / 12
+    df['Children_ratio'] = df['NumberOfChildrenVisiting'] / (df['NumberOfPersonVisiting'] + 1)
+    df['Followup_per_pitch'] = df['NumberOfFollowups'] / (df['DurationOfPitch'] + 1)
 
+    # Handle infinite values
+    df.replace([np.inf, -np.inf], 0, inplace=True)
 
-# Handle infinite values
-df.replace([np.inf, -np.inf], 0, inplace=True)
+    # Separate features/target
+    X = df.drop(['ProdTaken'], axis=1)
+    y = df['ProdTaken']
 
+    # Encode categorical
+    label_encoders = {}
+    categorical_columns = X.select_dtypes(include=['object']).columns
+    for col in categorical_columns:
+        le = LabelEncoder()
+        X[col] = le.fit_transform(X[col].astype(str))
+        label_encoders[col] = le
 
-# Separate features and target
-X = df.drop(['ProdTaken'], axis=1)
-y = df['ProdTaken']
-
-
-# Encode categorical variables
-categorical_columns = X.select_dtypes(include=['object']).columns
-
-for col in categorical_columns:
-     le = LabelEncoder()
-     X[col] = le.fit_transform(X[col].astype(str))
-     label_encoders[col] = le
-
-
-# Perform train-test split
-Xtrain, Xtest, ytrain, ytest = train_test_split(
-    X, y, test_size=0.2, random_state=42)
-
-# Scale numerical features
-scaler = StandardScaler()
-numerical_features = X.select_dtypes(include=[np.number]).columns
-
-X_train_scaled = X_train.copy()
-X_test_scaled = X_test.copy()
-
-X_train_scaled[numerical_features] = scaler.fit_transform(X_train[numerical_features])
-X_test_scaled[numerical_features] = scaler.transform(X_test[numerical_features])
-
-return X_train_scaled, X_test_scaled, y_train, y_test, scaler, label_encoders
-
-
-X_train.to_csv("X_train.csv",index=False)
-X_test.to_csv("X_test.csv",index=False)
-y_train.to_csv("y_train.csv",index=False)
-y_test.to_csv("y_test.csv",index=False)
-
-
-files = ["X_train.csv","X_test.csv","y_train.csv","y_test.csv"]
-
-for file_path in files:
-    api.upload_file(
-        path_or_fileobj=file_path,
-        path_in_repo=file_path.split("/")[-1],  # just the filename
-        repo_id="dr-psych/tourism_project",
-        repo_type="dataset",
+    # Train/test split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
     )
+
+    # Scale numerical features
+    scaler = StandardScaler()
+    num_cols = X.select_dtypes(include=[np.number]).columns
+    X_train[num_cols] = scaler.fit_transform(X_train[num_cols])
+    X_test[num_cols] = scaler.transform(X_test[num_cols])
+
+    return X_train, X_test, y_train, y_test
+
+def save_and_upload(X_train, X_test, y_train, y_test):
+    files = {
+        "X_train.csv": X_train,
+        "X_test.csv": X_test,
+        "y_train.csv": y_train,
+        "y_test.csv": y_test,
+    }
+
+    for fname, data in files.items():
+        data.to_csv(fname, index=False)
+        print(f"📂 Saved {fname}")
+        api.upload_file(
+            path_or_fileobj=fname,
+            path_in_repo=fname,
+            repo_id=REPO_ID,
+            repo_type=REPO_TYPE,
+        )
+        print(f"⬆️ Uploaded {fname} to {REPO_ID}")
+
+# -------------------------------------------------------------------
+# MAIN EXECUTION
+# -------------------------------------------------------------------
+if __name__ == "__main__":
+    df = load_data()
+    X_train, X_test, y_train, y_test = preprocess_data(df)
+    save_and_upload(X_train, X_test, y_train, y_test)
+    print("✅ Preprocessing complete and files uploaded.")
