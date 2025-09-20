@@ -42,7 +42,7 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          python model_building/prep.py
+          python model_building/data_preparation.py
 
   model-training:
     needs: data-prep
@@ -66,7 +66,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           MLFLOW_TRACKING_URI: http://localhost:5000
         run: |
-          python model_building/train.py
+          python model_building/model_training.py
 
   deploy-hosting:
     runs-on: ubuntu-latest
