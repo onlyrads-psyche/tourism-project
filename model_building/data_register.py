@@ -14,7 +14,7 @@ if HF_TOKEN is None:
 from huggingface_hub import HfApi
 api = HfApi()
 # Pass the token explicitly when creating or interacting with repos
-api.create_repo(name="dr-psych/tourism_project", token=HF_TOKEN, repo_type="dataset")
+api.create_repo(name=repo_id, token="HF_TOKEN", repo_type="dataset")
 
 # Initialize API client
 api = HfApi(token=os.getenv("HF_TOKEN"))
