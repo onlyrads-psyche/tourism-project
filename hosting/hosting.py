@@ -1,9 +1,10 @@
+%%writefile tourism_project/hosting/hosting.py
 from huggingface_hub.utils import RepositoryNotFoundError, HfHubHTTPError
 from huggingface_hub import HfApi, create_repo
 import os
 
 # Different repo for the space (app deployment)
-repo_id = "dr-psych/tourism-predictor-app"  # Different name for space
+repo_id = "dr-psych/tourism_project"  # Different name for space
 repo_type = "space"  # Space for Streamlit app, not dataset
 
 # Initialize API client with environment variable
@@ -25,7 +26,7 @@ except RepositoryNotFoundError:
 
 # Upload deployment files to the space
 api.upload_folder(
-    folder_path="tourism_project/deployment",
+    folder_path="deployment",
     repo_id=repo_id,
     repo_type=repo_type,
 )
