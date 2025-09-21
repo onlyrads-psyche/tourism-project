@@ -127,21 +127,7 @@ def main():
 
             with col6:
                 st.metric("Will Purchase Probability", f"{prediction_proba[1]:.2%}")
-
-            # Simple progress bars instead of gauge charts
-            st.subheader("Probability Visualization")
-            st.write("Will Purchase Probability:")
-            st.progress(prediction_proba[1])
-            st.write(f"{prediction_proba[1]:.1%}")
-
-            # Business insights
-            st.subheader("Business Insights")
-            if prediction_proba[1] > 0.7:
-                st.success("High conversion probability - Priority customer for targeted marketing!")
-            elif prediction_proba[1] > 0.4:
-                st.warning("Moderate conversion probability - May need additional incentives.")
-            else:
-                st.info("Low conversion probability - Focus on other prospects.")
+                
 
         except Exception as e:
             st.error(f"Prediction error: {e}")
