@@ -46,8 +46,8 @@ def load_and_prepare_data():
     print(f"CityTier values: {sorted(df['CityTier'].unique())}")
     print(f"Target distribution: {df['ProdTaken'].value_counts()}")
 
-    # Drop CustomerID
-    df.drop(columns=['CustomerID'], inplace=True)
+    # Drop Columns
+    df.drop(columns=['CustomerID', 'Unnamed'], inplace=True)
 
     # Feature engineering
     df['Income_per_person'] = df['MonthlyIncome'] / (df['NumberOfPersonVisiting'] + 1)

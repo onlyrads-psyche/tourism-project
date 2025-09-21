@@ -98,7 +98,7 @@ def main():
         'DurationOfPitch': [duration_pitch]
     })
 
-    # Add engineered features (matching your training pipeline)
+    # Add engineered features (matching the training pipeline)
     input_data['Income_per_person'] = input_data['MonthlyIncome'] / (input_data['NumberOfPersonVisiting'] + 1)
     input_data['Trips_per_year_ratio'] = input_data['NumberOfTrips'] / 12
     input_data['Children_ratio'] = input_data['NumberOfChildrenVisiting'] / input_data['NumberOfPersonVisiting'] if input_data['NumberOfPersonVisiting'].iloc[0] > 0 else 0
