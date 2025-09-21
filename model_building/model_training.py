@@ -1,4 +1,3 @@
-%%writefile tourism_project/model_building/model_training.py
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
