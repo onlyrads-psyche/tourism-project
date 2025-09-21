@@ -1,3 +1,4 @@
+%%writefile tourism_project/model_building/model_training.py
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
@@ -18,19 +19,17 @@ def main():
     mlflow.set_experiment("Tourism_Production_Experiment")
 
     api = HfApi(token=os.getenv("HF_TOKEN"))
-    
-    # Load processed data
-   try:
-       X_train = pd.read_csv("X_train.csv")
-       X_test = pd.read_csv("X_test.csv")
-       y_train = pd.read_csv("y_train.csv")['ProdTaken']
-       y_test = pd.read_csv("y_test.csv")['ProdTaken']
 
-       print(f"Data loaded : Train: {x_train.shape}, Test: {x_test.shape}")
-   except Exception as e:
-       print(f"Error loading data: {e}")
-       return
-
+    # Load data
+    try:
+        X_train = pd.read_csv("X_train.csv")
+        X_test = pd.read_csv("X_test.csv")
+        y_train = pd.read_csv("y_train.csv")['ProdTaken']
+        y_test = pd.read_csv("y_test.csv")['ProdTaken']
+        print("Data loaded successfully")
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        return
 
     # Define features
     numerical_cols = ['Age', 'CityTier', 'NumberOfPersonVisiting', 'PreferredPropertyStar',
