@@ -1,4 +1,3 @@
-%%writefile tourism_project/model_building/data_preparation.py
 import pandas as pd
 import numpy as np
 import os
