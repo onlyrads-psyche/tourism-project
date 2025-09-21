@@ -47,7 +47,7 @@ def load_and_prepare_data():
     print(f"Target distribution: {df['ProdTaken'].value_counts()}")
 
     # Drop Columns
-    df.drop(columns=['CustomerID', 'Unnamed'], inplace=True)
+    df.drop(columns=['CustomerID'], inplace=True)
 
     # Feature engineering
     df['Income_per_person'] = df['MonthlyIncome'] / (df['NumberOfPersonVisiting'] + 1)
