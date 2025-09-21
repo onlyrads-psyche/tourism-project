@@ -19,16 +19,18 @@ def main():
 
     api = HfApi(token=os.getenv("HF_TOKEN"))
 
-    # Load data
-    try:
-        X_train = pd.read_csv("X_train.csv")
-        X_test = pd.read_csv("X_test.csv")
-        y_train = pd.read_csv("y_train.csv")['ProdTaken']
-        y_test = pd.read_csv("y_test.csv")['ProdTaken']
-        print("Data loaded successfully")
-    except Exception as e:
-        print(f"Error loading data: {e}")
-        return
+    # Load processed data
+   try:
+       X_train = pd.read_csv("X_train.csv")
+       X_test = pd.read_csv("X_test.csv")
+       y_train = pd.read_csv("y_train.csv")['ProdTaken']
+       y_test = pd.read_csv("y_test.csv")['ProdTaken']
+
+       print(f"Data loaded : Train: {X_train.shape}, Test: {X_test.shape}")
+   except Exception as e:
+       print(f"Error loading data: {e}")
+       return
+
 
     # Define features
     numerical_cols = ['Age', 'CityTier', 'NumberOfPersonVisiting', 'PreferredPropertyStar',
